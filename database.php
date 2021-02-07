@@ -1,21 +1,48 @@
 <?php
 
+/**
+ * Database class used for all operations on the database.
+ */
 class Database {
 
+  /**
+   * Stores connection configuration credentials.
+   * @var array $config
+   */
   private $config;
 
+  /**
+   * Stores mysqli connection object.
+   * @var object|false $connection
+   */
   private $connection;
 
+  /**
+   * Stores database name.
+   * @var string DATABASE_NAME
+   */
   private const DATABASE_NAME = 'zadanie';
 
+  /**
+   * Stores a SQL query for creating a database if it does not exists.
+   * @var string CREATE_DATABASE
+   */
   private const CREATE_DATABASE = "CREATE DATABASE IF NOT EXISTS zadanie DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci";
 
+  /**
+   * Stores a SQL query for creating a domain table if it does not exists.
+   * @var string CREATE_TABLE
+   */
   private const CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS domain( '.
     'id INT NOT NULL AUTO_INCREMENT, '.
     'email VARCHAR(100) NULL, '.
     'count INT NULL DEFAULT 1, '.
     'primary key ( id ))';
 
+  /**
+   * Class constructor, stores connection configuration in a private variable and initializes the database.
+   * @return void
+   */
   public function __construct() {
 
     require __DIR__.'/db_config.php';
@@ -25,6 +52,11 @@ class Database {
     $this->initializeDatabase();
   }
 
+  /**
+   * Connects to the database, stores the connection object in a private
+   * variable and creates a database and a table.
+   * @return void
+   */
   private function initializeDatabase() {
 
     $connection = @mysqli_connect($this->config['host'], $this->config['user'], $this->config['password']);
@@ -40,6 +72,12 @@ class Database {
     $this->executeQuery(self::CREATE_TABLE, true);
   }
 
+  /**
+   * Executes a database query.
+   * @param string $query
+   * @param bool $selectDatabase
+   * @return object
+   */
   private function executeQuery($query, $selectDatabase = false) {
 
     if ($selectDatabase) {
@@ -57,6 +95,13 @@ class Database {
       return $result;
     }
   }
+
+  /**
+   * Checks if a given e-mail domain exists in a database, if not inserts a new row with that email,
+   * otherwise increments the occurence counter in that row.
+   * @param string $email
+   * @return void
+   */
 
   public function saveEmailIntoDatabase($email) {
 
@@ -83,6 +128,12 @@ class Database {
     mysqli_close($this->connection);
   }
 
+  /**
+   * Updates a row by incrementing its counter.
+   * @param int $id ID of the row to update.
+   * @param int $count Counter number to increment.
+   * @return void
+   */
   private function updateRow($id, $count) {
 
     $sql = "UPDATE domain SET count = count + 1 WHERE id = '".$id."'";
